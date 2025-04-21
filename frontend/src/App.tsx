@@ -1,4 +1,4 @@
-import { ReminderDisplay } from './components/ReminderDisplay'
+import { ReminderDisplay } from './components/ReminderDisplay.tsx'
 import './App.css'
 
 function App() {

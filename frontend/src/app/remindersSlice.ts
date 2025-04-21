@@ -62,7 +62,7 @@ export const addReminderKeyboard = (event: KeyboardEvent):  AppThunk => {
 // there are also async thunks for API calls, probably similar to RTK Query
 export const addReminderAsync = createAsyncThunk(
   'reminders/addReminderAsync',
-  async (reminder: string) => {
+  async () => {
     const response = await postReminder();
     return response.data;
   }

@@ -2,7 +2,7 @@ import { useState, KeyboardEvent } from 'react'
 import { Reminder } from '../interfaces/RemindersInterfaces';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { selectReminders, addReminder, removeReminder, addReminderAsync } from '../app/remindersSlice';
+import { selectReminders, addReminder, removeReminder } from '../app/remindersSlice';
 
 export const ReminderDisplay = () => {
   const [inputValue, setInputValue] = useState<Reminder["value"]>("");
@@ -42,7 +42,8 @@ export const ReminderDisplay = () => {
 
   return (
     <>
-      <h1>Reminders</h1>
+      <h1>Reminders howdy</h1>
+      <h2>{import.meta.env.MODE}</h2>
       <div className="card">
         <input onKeyDown={(event) => addReminderOnEnter(event)} placeholder="enter reminder" 
           onChange={(event) => setInputValue(event.target.value)} value={inputValue} />
