@@ -11,8 +11,21 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    environment:
-      - VITE_APP_BACKEND_ADDRESS=http://localhost/api
+    env_file:
+      - .env
+    networks:
+      - network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: always
+    ports:
+      - 3001:3001
+    volumes:
+      - ./backend:/app
     networks:
       - network
 networks:

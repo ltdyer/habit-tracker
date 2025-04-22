@@ -44,6 +44,7 @@ export const ReminderDisplay = () => {
     <>
       <h1>Reminders howdy</h1>
       <h2>{import.meta.env.MODE}</h2>
+      <h2>{import.meta.env.VITE_APP_BACKEND_ADDRESS}</h2>
       <div className="card">
         <input onKeyDown={(event) => addReminderOnEnter(event)} placeholder="enter reminder" 
           onChange={(event) => setInputValue(event.target.value)} value={inputValue} />

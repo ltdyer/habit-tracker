@@ -5,7 +5,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        - VITE_APP_BACKEND_ADDRESS=https://localhost/api/prod
+        - VITE_APP_BACKEND_ADDRESS=${VITE_APP_BACKEND_ADDRESS}
     container_name: frontend-prod
     restart: always
     ports:

@@ -1,18 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-// export default defineConfig({
-//   base: "/habit-tracker",
-//   plugins: [react()],
-//   server: {
-//     port: 3000,
-//     host:true,
-//     watch: {
-//       usePolling: true
-//     }
-//   }
-// })
 
 export default defineConfig(( { command, mode } ) => {
   console.log(command);
@@ -38,7 +26,9 @@ export default defineConfig(( { command, mode } ) => {
       },
     },
     define: {
-      VITE_APP_BACKEND_ADDRESS: JSON.stringify(env.VITE_APP_BACKEND_ADDRESS)
+      // can access this through import.meta.env.VITE_APP_BACKEND_ADDRESS on the frontend
+      // can also pass "process.env": process.env to have everything from .env but that is discouraged
+      VITE_APP_BACKEND_ADDRESS: JSON.stringify(env.VITE_APP_BACKEND_ADDRESS),
     }
   }
 })
