@@ -1,14 +1,18 @@
-import { useState, KeyboardEvent } from 'react'
+import { useState, useEffect, KeyboardEvent } from 'react'
 import { Reminder } from '../interfaces/RemindersInterfaces';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { selectReminders, addReminder, removeReminder } from '../app/remindersSlice';
+
 
 export const ReminderDisplay = () => {
   const [inputValue, setInputValue] = useState<Reminder["value"]>("");
   const dispatch = useAppDispatch();
   const reminders = useAppSelector(selectReminders)
 
+  useEffect(() => {
+    console.log(import.meta.env)
+  }, [import.meta.env])
   const setReminder = () => {
     if (reminders.map(reminder => reminder.value).includes(inputValue)) {
       console.log("reminder already in list!");
@@ -40,11 +44,15 @@ export const ReminderDisplay = () => {
     })
   }
 
+  const runningInDev = (): boolean => {
+    return import.meta.env.DEV;
+  }
+
   return (
     <>
       <h1>Reminders howdy</h1>
       <h2>{import.meta.env.MODE}</h2>
-      <h2>{import.meta.env.VITE_APP_BACKEND_ADDRESS}</h2>
+      <h2>{`${import.meta.env.VITE_HOST}:${runningInDev() ? import.meta.env.VITE_FRONTEND_PORT : import.meta.env.VITE_FRONTEND_PORT_PROD}`}</h2>
       <div className="card">
         <input onKeyDown={(event) => addReminderOnEnter(event)} placeholder="enter reminder" 
           onChange={(event) => setInputValue(event.target.value)} value={inputValue} />

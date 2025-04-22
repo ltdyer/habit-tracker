@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react'
 
 
 export default defineConfig(( { command, mode } ) => {
-  console.log(command);
+  console.log(command)
+  console.log(process.cwd())
   const env = loadEnv(mode, process.cwd());
+  console.log(env)
   return {
     // previous issue (now fixed)
     // previous nginx conf file (which is what serves the app when running in production) basically couldnt find the index.js and index.css because they had /habit-tracker as the base.
@@ -28,7 +30,7 @@ export default defineConfig(( { command, mode } ) => {
     define: {
       // can access this through import.meta.env.VITE_APP_BACKEND_ADDRESS on the frontend
       // can also pass "process.env": process.env to have everything from .env but that is discouraged
-      VITE_APP_BACKEND_ADDRESS: JSON.stringify(env.VITE_APP_BACKEND_ADDRESS),
+      // as long as all env vars are prefixed with VITE_ we don't need to define anything here for client to be exposed to those variables
     }
   }
 })

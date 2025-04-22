@@ -7,12 +7,11 @@ services:
     container_name: frontend
     restart: always
     ports:
-      - 3000:3000
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    env_file:
-      - .env
+    # no env_file arg here since Vite requires it own .env file in its own directory to expose env vars to client
     networks:
       - network
 
@@ -23,9 +22,12 @@ services:
     container_name: backend
     restart: always
     ports:
-      - 3001:3001
+      - ${BACKEND_PORT}:${BACKEND_PORT}
     volumes:
       - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - .env
     networks:
       - network
 networks:

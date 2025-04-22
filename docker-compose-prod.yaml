@@ -4,12 +4,24 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-      args:
-        - VITE_APP_BACKEND_ADDRESS=${VITE_APP_BACKEND_ADDRESS}
     container_name: frontend-prod
     restart: always
     ports:
-      - 3000:3000
+      - ${FRONTEND_PORT_PROD}:${FRONTEND_PORT_PROD}
+    networks:
+      - network
+  
+  backend-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: backend-prod
+    restart: always
+    ports:
+      - ${BACKEND_PORT_PROD}:${BACKEND_PORT_PROD}
+    # not supposed to use .env in prod but we can take care of this later
+    env_file:
+      - .env
     networks:
       - network
 networks:
