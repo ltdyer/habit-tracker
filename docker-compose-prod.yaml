@@ -20,6 +20,7 @@ services:
     ports:
       - ${BACKEND_PORT_PROD}:${BACKEND_PORT_PROD}
     # not supposed to use .env in prod but we can take care of this later
+    # ALSO IMPORTANT DOCKER DOES NOT SEEM TO IDENTIFY USING AN .ENV.PRODUCTION FILE HERE
     env_file:
       - .env
     networks:

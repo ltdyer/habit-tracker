@@ -1,23 +1,29 @@
 import { AppThunk, RootState } from "./store";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { postReminder } from "../api/remindersAPI";
+import { client } from "../api/remindersAPI";
 import { Reminder } from "../interfaces/RemindersInterfaces";
+import { createAppAsyncThunk } from "./withTypes";
 
 export interface RemindersState {
   reminders: Reminder[]
+  status: 'idle' | 'pending' | 'succeeded' | 'failed'
+  error: string | null
 }
 
 const initialState: RemindersState = {
-  reminders: []
+  reminders: [],
+  status: 'idle',
+  error: null
 }
 
 export const remindersSlice = createSlice({
   name: "reminders",
   initialState,
   reducers: {
-    addReminder: (state, action: PayloadAction<string>) => {
-      state.reminders = [...state.reminders, {status: 'idle',value: action.payload}]
+    // safe to just directly edit state since Redux uses Immer under the hood to ensure immutability
+    addReminder: (state, action: PayloadAction<Reminder>) => {
+      state.reminders.push(action.payload);
     },
     removeReminder: (state, action: PayloadAction<Reminder[]>) => {
       state.reminders = [...action.payload]
@@ -25,21 +31,24 @@ export const remindersSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-    .addCase(addReminderAsync.pending, state => {
-      state.reminders.forEach((reminder: Reminder) => {
-        reminder.status = 'loading'
-      })
+    .addCase(fetchReminders.pending, state => {
+      state.status = 'pending'
+      // state.reminders.forEach((reminder: Reminder) => {
+      //   reminder.status = 'loading'
+      // })
     })
-    .addCase(addReminderAsync.fulfilled, (state, action) => {
-      state.reminders.forEach((reminder: Reminder) => {
-        reminder.status = 'idle'
-      })
-      state.reminders = [...state.reminders, {status: 'idle', value: action.payload}]
+    .addCase(fetchReminders.fulfilled, (state, action) => {
+      state.status = 'succeeded'
+      // state.reminders.forEach((reminder: Reminder) => {
+      //   reminder.status = 'idle'
+      // })
+      state.reminders.push(...action.payload);
     })
-    .addCase(addReminderAsync.rejected, state => {
-      state.reminders.forEach((reminder: Reminder) => {
-        reminder.status = 'failed'
-      })
+    .addCase(fetchReminders.rejected, state => {
+      state.status = 'failed'
+      // state.reminders.forEach((reminder: Reminder) => {
+      //   reminder.status = 'failed'
+      // })
     })
   },
 })
@@ -51,19 +60,23 @@ export default remindersSlice.reducer
 export const selectReminders = (state: RootState) => state.reminders.reminders
 
 // mostly just to show Thunks in action, not really useful for our case
-export const addReminderKeyboard = (event: KeyboardEvent):  AppThunk => {
-  return (dispatch) => {
+export const addReminderKeyboard = (event: KeyboardEvent): AppThunk => {
+  return (dispatch, getState: () => RootState) => {
+    const stateBefore = getState();
+    console.log(stateBefore)
     if (event.key.toLowerCase() === 'enter') {
-      dispatch(addReminder("created reminder with Thunk!"))
+      dispatch(addReminder({value: "created reminder with Thunk!"}))
     }
   }
 }
 
 // there are also async thunks for API calls, probably similar to RTK Query
-export const addReminderAsync = createAsyncThunk(
-  'reminders/addReminderAsync',
+// this first arg is the redux action type like reminders/addReminder or reminders/removeReminders
+export const fetchReminders = createAppAsyncThunk(
+  'reminders/getAllReminders',
   async () => {
-    const response = await postReminder();
+    const response = await client.get('/reminders/getAll');
+    console.log(response)
     return response.data;
   }
 )
