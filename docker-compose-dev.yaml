@@ -21,13 +21,16 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     restart: always
+    # Docker always reaches for the .env file to assign the values dynamically here
+    # so Docker will use the root .env file and we will give the backend a different .env file to use 
+    # to access node_env, the correct port, etc
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
     volumes:
       - ./backend:/app
       - /app/node_modules
     env_file:
-      - .env
+      - ./backend/.env
     networks:
       - network
 networks:

@@ -2,12 +2,11 @@ const express = require('express');
 const cors = require('cors')
 
 const app = express();
-// this is defined when you create the docker container and give it a .env file to use
-// TODO: need to change this to add PROD
-// I think we need to be able to have the backend identify what env its running in and change this port accordingly
-const port = process.env.BACKEND_PORT ?? 3001;
+// process.env is based on either if you give docker-compose file a env-file argument to use or if you set
+// an ENV argument in the Dockerfile. 
+const port = process.env.BACKEND_PORT
 const host = process.env.HOST
-console.log(process.env.BACKEND_PORT)
+console.log(process.env)
 const birdRoutes = require('./routes/birdRoutes')
 const reminderRoutes = require('./routes/reminderRoutes')
 

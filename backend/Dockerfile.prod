@@ -5,3 +5,60 @@ RUN npm install
 COPY . .
 EXPOSE 3003
 CMD ["node", "index.js"]
+
+# TODO: Make the docker code below work
+# essentially what we should do with production images is build an
+# "easily distributable container" in a dist folder (like what we do with the frontend dist)
+# That dist folder contains compiled javascript code which is run from that folder.
+# not sure if it is needed necessarilly for normal pure JS like express but we should look into it later
+# but yeah go work on some frontend stuff now ya nerd
+
+
+# FROM node:20-alpine AS node
+
+
+# # Builder stage
+
+# FROM node AS builder
+
+# # Use /app as the CWD
+# WORKDIR /app            
+
+# # Copy package.json and package-lock.json to /app
+# COPY package*.json ./   
+
+# # Install all dependencies
+# RUN npm i               
+
+# # Copy the rest of the code
+# COPY . .                
+
+# # Invoke the build script to transpile code to js
+# RUN npm run build       
+
+
+# # Final stage
+
+
+# FROM node AS final
+
+# # Prepare a destination directory for js files
+# RUN mkdir -p /app/dist                  
+
+# # Use /app as CWD
+# WORKDIR /app                            
+
+# # Copy package.json and package-lock.json
+# COPY package*.json ./                   
+
+# # Install dependencies
+# RUN npm i           
+
+# # Copy transpiled js from builder stage into the final image
+# COPY --from=builder /app/dist ./dist
+
+# # Open desired port
+# EXPOSE 3003
+
+# # Use js files to run the application
+# ENTRYPOINT ["node", "./dist/index.js"]

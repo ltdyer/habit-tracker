@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile.prod
     container_name: frontend-prod
     restart: always
+    # we aren't giving the frontend container a .env file here since it already has its own .env and .env.prod
+    # files that Vite identifies automatically since its goated like that frfr
     ports:
       - ${FRONTEND_PORT_PROD}:${FRONTEND_PORT_PROD}
     networks:
@@ -17,12 +19,14 @@ services:
       dockerfile: Dockerfile.prod
     container_name: backend-prod
     restart: always
+    # Docker always reaches for the .env file to assign the values dynamically here
+    # so Docker will use the root .env file and we will give the backend a different .env file to use 
+    # to access node_env, the correct port, etc
     ports:
       - ${BACKEND_PORT_PROD}:${BACKEND_PORT_PROD}
-    # not supposed to use .env in prod but we can take care of this later
-    # ALSO IMPORTANT DOCKER DOES NOT SEEM TO IDENTIFY USING AN .ENV.PRODUCTION FILE HERE
+    # we need to give the backend container some .env file or else node's process.env wont have any values we can use
     env_file:
-      - .env
+      - ./backend/.env.production
     networks:
       - network
 networks:
