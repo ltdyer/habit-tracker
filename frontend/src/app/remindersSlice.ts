@@ -25,8 +25,19 @@ export const remindersSlice = createSlice({
     addReminder: (state, action: PayloadAction<Reminder>) => {
       state.reminders.push(action.payload);
     },
-    removeReminder: (state, action: PayloadAction<Reminder[]>) => {
-      state.reminders = [...action.payload]
+    removeReminder: (state, action: PayloadAction<Reminder>) => {
+      // this creates a new array, does not directly edit original state
+      state.reminders = state.reminders.filter((reminder) => {
+        return reminder.id !== action.payload.id
+      })
+    },
+    editReminder: (state, action: PayloadAction<Reminder>) => {
+      // this creates a new array, does not edit original state
+      // additionally, we are not adding a new reminder object in the new array, just modifying one field of the original
+      // while keeping all other fields the same
+      state.reminders = state.reminders.map((reminder) => {
+        return reminder.id === action.payload.id ?  {...reminder, value: action.payload.value} : reminder
+      })
     }
   },
   extraReducers(builder) {
@@ -44,8 +55,9 @@ export const remindersSlice = createSlice({
       // })
       state.reminders.push(...action.payload);
     })
-    .addCase(fetchReminders.rejected, state => {
+    .addCase(fetchReminders.rejected, (state, action) => {
       state.status = 'failed'
+      state.error = action.error.message ?? 'Unknown error'
       // state.reminders.forEach((reminder: Reminder) => {
       //   reminder.status = 'failed'
       // })
@@ -53,22 +65,23 @@ export const remindersSlice = createSlice({
   },
 })
 
-export const {addReminder, removeReminder} = remindersSlice.actions;
+export const {addReminder, removeReminder, editReminder} = remindersSlice.actions;
 
 export default remindersSlice.reducer
 
 export const selectReminders = (state: RootState) => state.reminders.reminders
+export const remindersStatus = (state: RootState) => state.reminders.status
 
 // mostly just to show Thunks in action, not really useful for our case
-export const addReminderKeyboard = (event: KeyboardEvent): AppThunk => {
-  return (dispatch, getState: () => RootState) => {
-    const stateBefore = getState();
-    console.log(stateBefore)
-    if (event.key.toLowerCase() === 'enter') {
-      dispatch(addReminder({value: "created reminder with Thunk!"}))
-    }
-  }
-}
+// export const addReminderKeyboard = (event: KeyboardEvent): AppThunk => {
+//   return (dispatch, getState: () => RootState) => {
+//     const stateBefore = getState();
+//     console.log(stateBefore)
+//     if (event.key.toLowerCase() === 'enter') {
+//       dispatch(addReminder({value: "created reminder with Thunk!"}))
+//     }
+//   }
+// }
 
 // there are also async thunks for API calls, probably similar to RTK Query
 // this first arg is the redux action type like reminders/addReminder or reminders/removeReminders
@@ -78,5 +91,19 @@ export const fetchReminders = createAppAsyncThunk(
     const response = await client.get('/reminders/getAll');
     console.log(response)
     return response.data;
+  },
+  // optional 3rd argument to AsyncThunk
+  // takes in an arg, and api which access the current thunk request
+  // this runs before the thunk and if the status is not idle (i.e no request made yet), it will allow the thunk to continue
+  // however, if a thunk is currently running and another request is made (not idle), it returns false and cancels the 2nd request
+  // done to prevent React strictMode from executing two requests
+  // RTK Query implements something similar automatically so we don't need to worry about manually writing this
+  {
+    condition(arg, thunkApi) {
+      const status = remindersStatus(thunkApi.getState());
+      if (status !== 'idle') {
+        return false
+      }
+    }
   }
 )
