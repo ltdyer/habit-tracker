@@ -11,6 +11,10 @@ export interface RemindersState {
   error: string | null
 }
 
+export interface InputError {
+  errorMessage: string
+}
+
 const initialState: RemindersState = {
   reminders: [],
   status: 'idle',
@@ -57,10 +61,9 @@ export const remindersSlice = createSlice({
     })
     .addCase(fetchReminders.rejected, (state, action) => {
       state.status = 'failed'
-      state.error = action.error.message ?? 'Unknown error'
-      // state.reminders.forEach((reminder: Reminder) => {
-      //   reminder.status = 'failed'
-      // })
+      // because we established that rejectWithValue takes in an InputError
+      // the payload here knows that there should be an errorMessage field we can access
+      state.error = action.payload?.errorMessage ?? 'Unknown error'
     })
   },
 })
@@ -71,6 +74,7 @@ export default remindersSlice.reducer
 
 export const selectReminders = (state: RootState) => state.reminders.reminders
 export const remindersStatus = (state: RootState) => state.reminders.status
+export const errorMessage = (state: RootState) => state.reminders.error
 
 // mostly just to show Thunks in action, not really useful for our case
 // export const addReminderKeyboard = (event: KeyboardEvent): AppThunk => {
@@ -85,12 +89,29 @@ export const remindersStatus = (state: RootState) => state.reminders.status
 
 // there are also async thunks for API calls, probably similar to RTK Query
 // this first arg is the redux action type like reminders/addReminder or reminders/removeReminders
-export const fetchReminders = createAppAsyncThunk(
+export const fetchReminders = createAppAsyncThunk<
+  // Return type of the payload creator (what you expect to return from 'reminders/getAllReminders')
+  Reminder[],
+  // Return type of the argument passed into the thunk (here, it is arg which is nothing so void)
+  // if it needed to be a clinetID or something, it would be a string/number/etc
+  void,
+  // an object that lets you specify additional typings. We need to confirm the typing of the the argument gooing into RejectWithValue
+  // this is the syntax for that
+  {
+    rejectValue: InputError
+  }
+>(
   'reminders/getAllReminders',
-  async () => {
-    const response = await client.get('/reminders/getAll');
-    console.log(response)
-    return response.data;
+  async (
+    arg, // if we needed to send in a clientID or something, that would go where arg is
+    thunkApi) => {
+    try {
+      const response = await client.get('/reminders/getAll');
+      return response.data as Reminder[];
+    } catch(err: any) {
+      const error: InputError = { errorMessage: err?.message || 'Unknown error' };
+      return thunkApi.rejectWithValue(error);
+    }
   },
   // optional 3rd argument to AsyncThunk
   // takes in an arg, and api which access the current thunk request
@@ -105,5 +126,5 @@ export const fetchReminders = createAppAsyncThunk(
         return false
       }
     }
-  }
+  }, 
 )

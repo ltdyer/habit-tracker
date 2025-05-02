@@ -1,3 +1,4 @@
+import { isRejectedWithValue } from "@reduxjs/toolkit";
 
 const API_BASE_URL = `${import.meta.env.VITE_HOST}:${import.meta.env.VITE_BACKEND_PORT}`;
 
@@ -37,9 +38,9 @@ export async function client(endpoint: string, { body, ...customConfig }: Reques
         url: response.url,
       }
     }
-    throw new Error(response.statusText)
+    throw new Error(data.message)
   } catch (err: any) {
-    return Promise.reject(err.message ? err.message : data)
+    return Promise.reject(err ? err : data)
   }
 }
 

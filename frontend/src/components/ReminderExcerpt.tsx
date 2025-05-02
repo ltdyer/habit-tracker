@@ -2,7 +2,7 @@ import { Reminder } from "../interfaces/RemindersInterfaces"
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useState, KeyboardEvent } from "react";
 import { removeReminder, editReminder } from "../app/remindersSlice";
-import { ListItemButton, ListItem, ListItemIcon, ListItemText } from "@mui/material";
+import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField } from "@mui/material";
 import { CircleOutlined, DehazeRounded } from "@mui/icons-material";
 
 interface ReminderProps {
@@ -41,10 +41,10 @@ export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
           <ListItemButton onClick={() => setEditMode(true)}>
             {reminder.value}
           </ListItemButton> : 
-          <input onChange={(event) => setNewReminderValue(event.target.value)}
+          <TextField onChange={(event) => setNewReminderValue(event.target.value)}
                  value={newReminderValue}
                  onKeyDown={(event) => changeReminder(event)}>
-          </input>}
+          </TextField>}
       </ListItemText>
       <ListItemIcon>
         <ListItemButton>

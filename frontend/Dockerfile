@@ -1,6 +1,8 @@
-FROM node:20-alpine
+# originally this was an alpine image but running npm install for mui was very slow
+# changing it to slim made it significantly faster
+FROM node:20-slim
 WORKDIR /app
-COPY package.json .
+COPY package*.json .
 RUN npm install
 COPY . .
 EXPOSE 3000
