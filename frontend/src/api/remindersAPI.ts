@@ -1,4 +1,3 @@
-import { isRejectedWithValue } from "@reduxjs/toolkit";
 
 const API_BASE_URL = `${import.meta.env.VITE_HOST}:${import.meta.env.VITE_BACKEND_PORT}`;
 
