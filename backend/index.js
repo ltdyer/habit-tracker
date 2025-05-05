@@ -10,6 +10,7 @@ console.log(process.env)
 const birdRoutes = require('./routes/birdRoutes')
 const reminderRoutes = require('./routes/reminderRoutes')
 const {errorHandler} = require('./middleware/errorHandler')
+const { connectToMongo } = require('./database/db')
 
 // define cors for all requests because this is a private app and I don't care about CORS stuff. Just need it to not give me that stupid error
 app.use(cors())
@@ -19,9 +20,12 @@ app.use('/birds', birdRoutes)
 app.use('/reminders', reminderRoutes)
 app.use(errorHandler)
 
-app.listen(port, () => {
-  console.log(`backend listening on ${host}:${port}`)
+connectToMongo().then(() => {
+  app.listen(port, () => {
+    console.log(`backend listening on ${host}:${port}`)
+  })
 })
+
 
 app.get("/", (req, res) => {
   res.send("howdy")
