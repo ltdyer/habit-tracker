@@ -36,12 +36,15 @@ services:
       - network
 
 # database setup taken from this video: https://youtu.be/rPi9yPtlHYw?si=dYmaDRR8rlv7jB1w
+# this was also helpful: https://www.youtube.com/watch?v=gFjpv-nZO0U
 
   database:
     image: mongo:6
     container_name: mongo
     volumes:
       - mongo-data:/data/db
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
     networks:
       - network
 

@@ -4,7 +4,7 @@ COPY package.json .
 RUN npm install
 COPY . .
 EXPOSE 3003
-CMD ["node", "index.js"]
+CMD ["node", "index.ts"]
 
 # TODO: Make the docker code below work
 # essentially what we should do with production images is build an
