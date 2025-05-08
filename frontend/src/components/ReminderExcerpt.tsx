@@ -1,7 +1,7 @@
 import { Reminder } from "../interfaces/RemindersInterfaces"
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useState, KeyboardEvent } from "react";
-import { removeReminder, editReminder } from "../app/remindersSlice";
+import {deleteReminder, editReminder } from "../app/remindersSlice";
 import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField } from "@mui/material";
 import { CircleOutlined, DehazeRounded } from "@mui/icons-material";
 
@@ -16,8 +16,8 @@ export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [newReminderValue, setNewReminderValue] = useState<string>(reminder.value)
 
-  const deleteReminder = (reminderToDelete: Reminder) => {
-    dispatch(removeReminder(reminderToDelete));
+  const removeReminder = (reminderToDelete: Reminder) => {
+    dispatch(deleteReminder(reminderToDelete._id));
   }
 
   const changeReminder = (event: KeyboardEvent) => {
@@ -32,7 +32,7 @@ export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
   return (
     <ListItem>
       <ListItemIcon >
-        <ListItemButton onClick={() => deleteReminder(reminder)}>
+        <ListItemButton onClick={() => removeReminder(reminder)}>
           <CircleOutlined />
         </ListItemButton>
       </ListItemIcon>

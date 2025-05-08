@@ -48,20 +48,13 @@ export const remindersSlice = createSlice({
   initialState,
   reducers: {
     // safe to just directly edit state since Redux uses Immer under the hood to ensure immutability
+    // not using this but want to keep at least one example of a non-async reducer lol
     removeReminder: (state, action: PayloadAction<Reminder>) => {
       // this creates a new array, does not directly edit original state
       state.reminders = state.reminders.filter((reminder) => {
         return reminder._id !== action.payload._id
       })
     },
-    editReminder: (state, action: PayloadAction<Reminder>) => {
-      // this creates a new array, does not edit original state
-      // additionally, we are not adding a new reminder object in the new array, just modifying one field of the original
-      // while keeping all other fields the same
-      state.reminders = state.reminders.map((reminder) => {
-        return reminder._id === action.payload._id ?  {...reminder, value: action.payload.value} : reminder
-      })
-    }
   },
   extraReducers(builder) {
     builder
@@ -72,6 +65,23 @@ export const remindersSlice = createSlice({
     .addCase(addReminder.fulfilled, (state, action) => {
       state.status = 'succeeded'
       state.reminders.push(action.payload);
+    })
+    .addCase(deleteReminder.fulfilled, (state, action) => {
+      state.status = 'succeeded'
+      console.log(action.payload)
+      // this creates a new array, does not directly edit original state
+      state.reminders = state.reminders.filter((reminder) => {
+        return reminder._id !== action.payload
+      })
+    })
+    .addCase(editReminder.fulfilled, (state, action) => {
+      state.status = 'succeeded';
+      // this creates a new array, does not edit original state
+      // additionally, we are not adding a new reminder object in the new array, just modifying one field of the original
+      // while keeping all other fields the same
+      state.reminders = state.reminders.map((reminder) => {
+        return reminder._id === action.payload._id ?  {...reminder, value: action.payload.value} : reminder
+      })
     })
     // since every pending and rejected case is the same, we can add matchers that will 
     // provide a baseline for every case rather than repeating
@@ -87,7 +97,7 @@ export const remindersSlice = createSlice({
   },
 })
 
-export const {removeReminder, editReminder} = remindersSlice.actions;
+export const {removeReminder} = remindersSlice.actions;
 
 export default remindersSlice.reducer
 
@@ -155,9 +165,9 @@ export const addReminder = createAppAsyncThunk<
     rejectValue: InputError
   }
 >(
-  'reminder/addReminder',
+  'reminders/addReminder',
   async (
-    newReminder: NewReminder, // if we needed to send in a clientID or something, that would go where arg is
+    newReminder: NewReminder, 
     thunkApi) => {
       try {
         const response = await client.post('/reminders/addReminder', newReminder);
@@ -167,6 +177,50 @@ export const addReminder = createAppAsyncThunk<
         const error: InputError = { errorMessage: err?.message || 'Unknown error' };
         return thunkApi.rejectWithValue(error);
       }
-    
+  }
+)
+
+export const deleteReminder = createAppAsyncThunk<
+  string,
+  string,
+  {
+    rejectValue: InputError
+  }
+>(
+  'reminders/deleteReminder',
+  async (
+    reminderId: string,
+    thunkApi
+  ) => {
+    try {
+      const response = await client.post(`/reminders/deleteReminder/${reminderId}`, {})
+      return response.data?._id;
+    } catch (err: any) {
+      const error: InputError = { errorMessage: err?.message || 'Unknown error' };
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+)
+
+export const editReminder = createAppAsyncThunk<
+  Reminder,
+  Reminder,
+  {
+    rejectValue: InputError
+  }
+>(
+  'reminders/editReminder',
+  async (
+    editedReminder: Reminder,
+    thunkApi
+  ) => {
+    try {
+      const response = await client.post('/reminders/editReminder', editedReminder);
+      console.log(response);
+      return response.data as Reminder;
+    } catch (err: any) {
+      const error: InputError = { errorMessage: err?.message || 'Unknown error' };
+      return thunkApi.rejectWithValue(error);
+    }
   }
 )
