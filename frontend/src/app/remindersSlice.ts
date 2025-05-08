@@ -1,5 +1,5 @@
 import { AppThunk, RootState } from "./store";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, Action  } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { client } from "../api/remindersAPI";
 import { Reminder } from "../interfaces/RemindersInterfaces";
@@ -15,6 +15,28 @@ export interface InputError {
   errorMessage: string
 }
 
+// use this Pick utility to take an existing Interface and create a new type from it with only select fields
+// here I want to send a Reminder as body input to addReminder but since MongoDB takes care of ID generation
+// I don't want to send it with an ID. SO I make a new Reminder type that is a Reminder but without that _id
+type NewReminder = Pick<Reminder, 'value'>;
+
+
+// Action definitions to tell Redux how it should define a Pending or Rejected action.
+// Need to include a RejectedAction interface because we need to check the action payload for data to display
+// but don't need to do anything special for Pending
+function isPendingAction(action: Action) {
+  return action.type.endsWith('pending')
+}
+
+interface RejectedAction extends Action {
+  payload: {
+    errorMessage: string
+  }
+}
+function isRejectedAction(action: Action): action is RejectedAction {
+  return action.type.endsWith('rejected')
+}
+
 const initialState: RemindersState = {
   reminders: [],
   status: 'idle',
@@ -26,13 +48,10 @@ export const remindersSlice = createSlice({
   initialState,
   reducers: {
     // safe to just directly edit state since Redux uses Immer under the hood to ensure immutability
-    addReminder: (state, action: PayloadAction<Reminder>) => {
-      state.reminders.push(action.payload);
-    },
     removeReminder: (state, action: PayloadAction<Reminder>) => {
       // this creates a new array, does not directly edit original state
       state.reminders = state.reminders.filter((reminder) => {
-        return reminder.id !== action.payload.id
+        return reminder._id !== action.payload._id
       })
     },
     editReminder: (state, action: PayloadAction<Reminder>) => {
@@ -40,35 +59,35 @@ export const remindersSlice = createSlice({
       // additionally, we are not adding a new reminder object in the new array, just modifying one field of the original
       // while keeping all other fields the same
       state.reminders = state.reminders.map((reminder) => {
-        return reminder.id === action.payload.id ?  {...reminder, value: action.payload.value} : reminder
+        return reminder._id === action.payload._id ?  {...reminder, value: action.payload.value} : reminder
       })
     }
   },
   extraReducers(builder) {
     builder
-    .addCase(fetchReminders.pending, state => {
-      state.status = 'pending'
-      // state.reminders.forEach((reminder: Reminder) => {
-      //   reminder.status = 'loading'
-      // })
-    })
     .addCase(fetchReminders.fulfilled, (state, action) => {
       state.status = 'succeeded'
-      // state.reminders.forEach((reminder: Reminder) => {
-      //   reminder.status = 'idle'
-      // })
       state.reminders.push(...action.payload);
     })
-    .addCase(fetchReminders.rejected, (state, action) => {
+    .addCase(addReminder.fulfilled, (state, action) => {
+      state.status = 'succeeded'
+      state.reminders.push(action.payload);
+    })
+    // since every pending and rejected case is the same, we can add matchers that will 
+    // provide a baseline for every case rather than repeating
+    .addMatcher(isPendingAction, (state, action) => {
+      state.status = 'pending'
+    })
+    .addMatcher(isRejectedAction, (state, action) => {
       state.status = 'failed'
       // because we established that rejectWithValue takes in an InputError
       // the payload here knows that there should be an errorMessage field we can access
-      state.error = action.payload?.errorMessage ?? 'Unknown error'
+      state.error = action.payload.errorMessage ?? 'Unknown error'
     })
   },
 })
 
-export const {addReminder, removeReminder, editReminder} = remindersSlice.actions;
+export const {removeReminder, editReminder} = remindersSlice.actions;
 
 export default remindersSlice.reducer
 
@@ -127,4 +146,27 @@ export const fetchReminders = createAppAsyncThunk<
       }
     }
   }, 
+)
+
+export const addReminder = createAppAsyncThunk<
+  Reminder,
+  NewReminder,
+  {
+    rejectValue: InputError
+  }
+>(
+  'reminder/addReminder',
+  async (
+    newReminder: NewReminder, // if we needed to send in a clientID or something, that would go where arg is
+    thunkApi) => {
+      try {
+        const response = await client.post('/reminders/addReminder', newReminder);
+        console.log(response)
+        return response.data as Reminder;
+      } catch(err: any) {
+        const error: InputError = { errorMessage: err?.message || 'Unknown error' };
+        return thunkApi.rejectWithValue(error);
+      }
+    
+  }
 )

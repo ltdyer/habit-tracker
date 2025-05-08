@@ -14,17 +14,14 @@ export const ReminderInputControl = () => {
   const dispatch = useAppDispatch();
 
 
-  const setReminder = () => {
+  const setReminder = async () => {
     if (reminders.map(reminder => reminder.value).includes(inputValue)) {
       console.log("reminder already in list!");
       // TODO: replace with some sort of error banner
     } else if (inputValue === "") {
       console.log("cannot add empty reminder");
     } else {
-      // get current last id
-      const latestId = reminders.length === 0 ? 0 : reminders[reminders.length-1].id
-      console.log(latestId)
-      dispatch(addReminder({value: inputValue, id: latestId+1}))
+      await dispatch(addReminder({value: inputValue}))
     }
     // clear current input field 
     setInputValue("");

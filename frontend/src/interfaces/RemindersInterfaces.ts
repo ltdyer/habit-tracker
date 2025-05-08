@@ -1,4 +1,4 @@
 export interface Reminder {
-  id: number
+  _id: string
   value: string
 }

@@ -17,6 +17,12 @@ console.log(process.env);
 // CORS: allow all for private app
 app.use(cors());
 
+// For parsing JSON in req.body
+app.use(express.json())
+
+// For parsing application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
+
 // Register routes
 app.use("/birds", birdRoutes);
 app.use("/reminders", reminderRoutes);
