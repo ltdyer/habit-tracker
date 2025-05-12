@@ -1,6 +1,7 @@
 import { MongoClient, Db } from "mongodb";
+import mongoose from 'mongoose';
 
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || "";
 const dbName = process.env.DB_NAME;
 
 if (!uri || !dbName) {
@@ -14,8 +15,9 @@ export async function connectToMongo(): Promise<void> {
   try {
     console.log("MongoDB URI:", uri);
     console.log("MongoDB DB Name:", dbName);
-    await client.connect();
-    db = client.db(dbName);
+    mongoose.connect(uri, {
+      dbName: "sample_mflix"
+    })
     console.log(`✅ Connected to MongoDB: ${dbName}`);
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
