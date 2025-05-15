@@ -5,7 +5,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { selectReminders, errorMessage, fetchReminders, remindersStatus } from '../app/remindersSlice';
 import { ReminderExcerpt } from './ReminderExcerpt';
 import CircularProgress from '@mui/material/CircularProgress'
-import {Box, List, Snackbar, Alert} from '@mui/material'
+import {Box, Divider, Stack, Alert} from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';
 
 export const ReminderDisplay = () => {
@@ -30,22 +30,19 @@ export const ReminderDisplay = () => {
   // interesting way to set dynamic content up without putting it in a function or doing inline rendereing in JSX return
   // both this approach and the inline approach in ReminderExcerpt are valid
   // this is more useful for complex rendering with loops and nesting
-  let content: ReactNode;
-  let errorContent: ReactNode;
-  // show spinner if status is idle
-  if (status === "pending") {
-    content = <CircularProgress />
-  }
-  // show reminders if status is idle or suceeded 
-  else if (status === "idle" || status === "succeeded") {
-    content = 
-      <List sx={{backgroundColor: 'lightblue'}}>
+  let content: ReactNode = 
+      <Stack spacing={1} divider={<Divider orientation='horizontal' flexItem />} >
        { reminders.map((reminder: Reminder) => {
           return (
             <ReminderExcerpt key={reminder.value} reminder={reminder} />
           )
         })}
-      </List>
+      </Stack>
+  let errorContent: ReactNode;
+  let pendingContent: ReactNode;
+  // show spinner if status is idle
+  if (status === "pending") {
+    pendingContent = <CircularProgress />
   }
   else if (status === "failed") {
     errorContent = 
@@ -59,8 +56,15 @@ export const ReminderDisplay = () => {
       <h1>Reminders howdy</h1>
       <h2>{import.meta.env.MODE}</h2>
       <h2>{`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_FRONTEND_PORT}`}</h2>
-      <ReminderInputControl />
-      {content}
+      
+      <Box sx={{display: 'flex', flexDirection: 'row'}}>
+        <ReminderInputControl />
+      </Box>
+      <Box sx={{backgroundColor: "lightblue", padding: "1em"}}>
+        {content}
+      </Box>
+      {pendingContent}
+
     </Box>
   )
 }

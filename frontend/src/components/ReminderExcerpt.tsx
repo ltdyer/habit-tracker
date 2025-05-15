@@ -30,7 +30,7 @@ export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
   }
 
   return (
-    <ListItem>
+    <ListItem sx={{backgroundColor: 'lightyellow'}}>
       <ListItemIcon >
         <ListItemButton onClick={() => removeReminder(reminder)}>
           <CircleOutlined />

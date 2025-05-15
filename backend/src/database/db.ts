@@ -15,7 +15,7 @@ export async function connectToMongo(): Promise<void> {
   try {
     console.log("MongoDB URI:", uri);
     console.log("MongoDB DB Name:", dbName);
-    mongoose.connect(uri, {
+    await mongoose.connect(uri, {
       dbName: "sample_mflix"
     })
     console.log(`✅ Connected to MongoDB: ${dbName}`);
