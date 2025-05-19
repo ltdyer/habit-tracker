@@ -1,4 +1,4 @@
-import { useState, useEffect, KeyboardEvent, ReactNode } from 'react'
+import { useState, useEffect, KeyboardEvent, ReactNode, ReactElement } from 'react'
 import { Reminder } from '../interfaces/RemindersInterfaces';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -7,6 +7,7 @@ import { ReminderExcerpt } from './ReminderExcerpt';
 import CircularProgress from '@mui/material/CircularProgress'
 import {Box, Divider, Stack, Alert} from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';
+import { DroppableCanvas } from './DroppableCanvas';
 
 export const ReminderDisplay = () => {
   const dispatch = useAppDispatch();
@@ -30,14 +31,11 @@ export const ReminderDisplay = () => {
   // interesting way to set dynamic content up without putting it in a function or doing inline rendereing in JSX return
   // both this approach and the inline approach in ReminderExcerpt are valid
   // this is more useful for complex rendering with loops and nesting
-  let content: ReactNode = 
-      <Stack spacing={1} divider={<Divider orientation='horizontal' flexItem />} >
-       { reminders.map((reminder: Reminder) => {
-          return (
-            <ReminderExcerpt key={reminder.value} reminder={reminder} />
-          )
-        })}
-      </Stack>
+  // let content: ReactNode[] = reminders.map((reminder: Reminder) => {
+  //     return (
+  //       <ReminderExcerpt key={reminder.value} reminder={reminder} />
+  //     )
+  //   })
   let errorContent: ReactNode;
   let pendingContent: ReactNode;
   // show spinner if status is idle
@@ -60,9 +58,11 @@ export const ReminderDisplay = () => {
       <Box sx={{display: 'flex', flexDirection: 'row'}}>
         <ReminderInputControl />
       </Box>
+
       <Box sx={{backgroundColor: "lightblue", padding: "1em"}}>
-        {content}
+        <DroppableCanvas reminders={reminders} />
       </Box>
+
       {pendingContent}
 
     </Box>

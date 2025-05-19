@@ -4,12 +4,14 @@ import { useState, KeyboardEvent } from "react";
 import {deleteReminder, editReminder } from "../app/remindersSlice";
 import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField } from "@mui/material";
 import { CircleOutlined, DehazeRounded } from "@mui/icons-material";
+import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 
 interface ReminderProps {
   reminder: Reminder
+  dragHandle?: DraggableProvidedDragHandleProps
 }
 
-export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
+export const ReminderExcerpt = ({ reminder, dragHandle }: ReminderProps) => {
 
   const dispatch  = useAppDispatch();
 
@@ -47,7 +49,7 @@ export const ReminderExcerpt = ({ reminder }: ReminderProps) => {
           </TextField>}
       </ListItemText>
       <ListItemIcon>
-        <ListItemButton>
+        <ListItemButton {...dragHandle}>
           <DehazeRounded />
         </ListItemButton>
       </ListItemIcon>
