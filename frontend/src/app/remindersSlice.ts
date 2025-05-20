@@ -55,6 +55,9 @@ export const remindersSlice = createSlice({
         return reminder._id !== action.payload._id
       })
     },
+    rearrangeReminders: (state, action: PayloadAction<Reminder[]>) => {
+      state.reminders = action.payload;
+    }
   },
   extraReducers(builder) {
     builder
@@ -97,7 +100,7 @@ export const remindersSlice = createSlice({
   },
 })
 
-export const {removeReminder} = remindersSlice.actions;
+export const {removeReminder, rearrangeReminders} = remindersSlice.actions;
 
 export default remindersSlice.reducer
 

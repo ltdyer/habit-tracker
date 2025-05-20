@@ -1,17 +1,17 @@
 import { Reminder } from "../interfaces/RemindersInterfaces"
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, MouseEvent, useEffect } from "react";
 import {deleteReminder, editReminder } from "../app/remindersSlice";
-import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField } from "@mui/material";
+import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField, ClickAwayListener } from "@mui/material";
 import { CircleOutlined, DehazeRounded } from "@mui/icons-material";
-import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
+import { Draggable, DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 
 interface ReminderProps {
   reminder: Reminder
-  dragHandle?: DraggableProvidedDragHandleProps
+  index: number
 }
 
-export const ReminderExcerpt = ({ reminder, dragHandle }: ReminderProps) => {
+export const ReminderExcerpt = ({ reminder, index }: ReminderProps) => {
 
   const dispatch  = useAppDispatch();
 
@@ -31,28 +31,48 @@ export const ReminderExcerpt = ({ reminder, dragHandle }: ReminderProps) => {
     }
   }
 
+  // if reminders have been rearranged, need to update the placeholder value so it matches the reminder in the new position     
+  useEffect(() => {
+    setNewReminderValue(reminder.value)
+  }, [reminder])
+
   return (
-    <ListItem sx={{backgroundColor: 'lightyellow'}}>
-      <ListItemIcon >
-        <ListItemButton onClick={() => removeReminder(reminder)}>
-          <CircleOutlined />
-        </ListItemButton>
-      </ListItemIcon>
-      <ListItemText>
-        {editMode === false ? 
-          <ListItemButton onClick={() => setEditMode(true)}>
-            {reminder.value}
-          </ListItemButton> : 
-          <TextField onChange={(event) => setNewReminderValue(event.target.value)}
-                 value={newReminderValue}
-                 onKeyDown={(event) => changeReminder(event)}>
-          </TextField>}
-      </ListItemText>
-      <ListItemIcon>
-        <ListItemButton {...dragHandle}>
-          <DehazeRounded />
-        </ListItemButton>
-      </ListItemIcon>
-    </ListItem>
+    <Draggable index={index} draggableId={index.toString()}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+        >
+          {provided.dragHandleProps && 
+            <ListItem sx={{backgroundColor: 'lightyellow', borderRadius: "25px"}}>
+              <ListItemIcon >
+                <ListItemButton onClick={() => removeReminder(reminder)}>
+                  <CircleOutlined />
+                </ListItemButton>
+              </ListItemIcon>
+              <ListItemText>
+                <ClickAwayListener onClickAway={() => setEditMode(false)}>
+                  {editMode === false ? 
+                  <ListItemButton onClick={() => setEditMode(true)}>
+                    {reminder.value}
+                  </ListItemButton> : 
+                  <TextField onChange={(event) => setNewReminderValue(event.target.value)}
+                        value={newReminderValue}
+                        onKeyDown={(event) => changeReminder(event)}>
+                  </TextField>}
+                </ClickAwayListener>
+                
+              </ListItemText>
+              <ListItemIcon>
+                <ListItemButton {...provided.dragHandleProps}>
+                  <DehazeRounded />
+                </ListItemButton>
+              </ListItemIcon>
+            </ListItem>
+          }
+        </div>
+      )}
+    </Draggable>
+    
   )
 }
