@@ -1,7 +1,7 @@
 import {  useEffect, ReactNode, useState } from 'react'
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { errorMessage, fetchReminders, remindersStatus } from '../app/remindersSlice';
+import { newErrorMessage, fetchReminders, newRemindersStatus } from '../app/remindersSlice';
 import CircularProgress from '@mui/material/CircularProgress'
 import {Box, Snackbar, Stack, Alert, Grow} from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';
@@ -9,8 +9,8 @@ import { DroppableCanvas } from './DroppableCanvas';
 
 export const ReminderDisplay = () => {
   const dispatch = useAppDispatch();
-  const status = useAppSelector(remindersStatus)
-  const error = useAppSelector(errorMessage);
+  const status = useAppSelector(newRemindersStatus)
+  const error = useAppSelector(newErrorMessage);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
 
   useEffect(() => {
@@ -22,13 +22,8 @@ export const ReminderDisplay = () => {
     if (status === "idle") {
       dispatch(fetchReminders())
     }
-  }, [dispatch, remindersStatus])
+  }, [dispatch, newRemindersStatus])
 
-  useEffect(() => {
-    if (status === "succeeded") {
-      setOpenSnackbar(true)
-    }
-  }, [status])
 
 
 
@@ -46,7 +41,6 @@ export const ReminderDisplay = () => {
     errorContent = 
         <Alert severity={"error"}>{error}</Alert>
   }
-
 
   return (
     <Box>
