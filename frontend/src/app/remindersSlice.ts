@@ -4,6 +4,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { client } from "../api/remindersAPI";
 import { Reminder, ApiStatus, Error } from "../interfaces/RemindersInterfaces";
 import { createAppAsyncThunk } from "./withTypes";
+import { AppStartListening } from "./listenerMiddleware";
 
 export interface RemindersState {
   reminders: Reminder[]
@@ -192,13 +193,21 @@ export const newRemindersStatus = (state: RootState): ApiStatus => {
   return 'idle'
 }
 
-export const remindersStatusObj = (state: RootState) => {
-  return {
-    'add': state.reminders.add.status,
-    'fetch': state.reminders.fetch.status,
-    'edit': state.reminders.edit.status,
-    'delete': state.reminders.delete.status
-  }
+// this is now listening for any addReminder.fullfilled action dispatches and shows a toast if one happens
+export const addReminderListeners = (startAppListening: AppStartListening) => {
+  startAppListening({
+    actionCreator: addReminder.fulfilled,
+    effect: async (action, listenerApi) => {
+      const { toast } = await import('react-tiny-toast')
+      const toastId = toast.show("New Reminder Added", {
+        variant: 'success',
+        position: 'top-right',
+        pause: true
+      })
+      await listenerApi.delay(5000)
+      toast.remove(toastId)
+    }
+  })
 }
  
 export const newErrorMessage = (state: RootState): Error => {

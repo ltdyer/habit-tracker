@@ -1,9 +1,9 @@
-import {  useEffect, ReactNode, useState } from 'react'
+import {  useEffect, ReactNode } from 'react'
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { newErrorMessage, fetchReminders, newRemindersStatus } from '../app/remindersSlice';
 import CircularProgress from '@mui/material/CircularProgress'
-import {Box, Snackbar, Stack, Alert, Grow} from '@mui/material'
+import { Box, Stack, Alert } from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';
 import { DroppableCanvas } from './DroppableCanvas';
 
@@ -11,7 +11,6 @@ export const ReminderDisplay = () => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(newRemindersStatus)
   const error = useAppSelector(newErrorMessage);
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
 
   useEffect(() => {
     console.log(import.meta.env)
@@ -49,16 +48,6 @@ export const ReminderDisplay = () => {
       <h2>{import.meta.env.MODE}</h2>
       <h2>{`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_FRONTEND_PORT}`}</h2>
       
-      <Snackbar
-        open={openSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        message={"Reminder added"}
-        autoHideDuration={2000}
-        slots={{
-          transition: Grow
-        }}
-        onClose={() => setOpenSnackbar(false)}
-      />
 
       <Stack spacing={3}>
         <Box sx={{display: 'flex', flexDirection: 'row'}}>
