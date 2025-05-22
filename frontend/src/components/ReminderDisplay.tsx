@@ -1,7 +1,7 @@
 import {  useEffect, ReactNode } from 'react'
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { newErrorMessage, fetchReminders, newRemindersStatus } from '../app/remindersSlice';
+import { errorMessage, fetchReminders, remindersStatus } from '../app/remindersSlice';
 import CircularProgress from '@mui/material/CircularProgress'
 import { Box, Stack, Alert } from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';
@@ -9,8 +9,8 @@ import { DroppableCanvas } from './DroppableCanvas';
 
 export const ReminderDisplay = () => {
   const dispatch = useAppDispatch();
-  const status = useAppSelector(newRemindersStatus)
-  const error = useAppSelector(newErrorMessage);
+  const status = useAppSelector(remindersStatus)
+  const error = useAppSelector(errorMessage);
 
   useEffect(() => {
     console.log(import.meta.env)
@@ -21,7 +21,7 @@ export const ReminderDisplay = () => {
     if (status === "idle") {
       dispatch(fetchReminders())
     }
-  }, [dispatch, newRemindersStatus])
+  }, [dispatch, remindersStatus])
 
 
 

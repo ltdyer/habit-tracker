@@ -1,5 +1,5 @@
 import { AppThunk, RootState } from "./store";
-import { createSlice, Action  } from "@reduxjs/toolkit";
+import { createSlice, Action, isAnyOf, isRejectedWithValue  } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { client } from "../api/remindersAPI";
 import { Reminder, ApiStatus, Error } from "../interfaces/RemindersInterfaces";
@@ -8,13 +8,10 @@ import { AppStartListening } from "./listenerMiddleware";
 
 export interface RemindersState {
   reminders: Reminder[]
-  add: { status: ApiStatus, error: Error }
-  edit: { status: ApiStatus, error: Error }
-  fetch: { status: ApiStatus, error: Error }
-  delete: { status: ApiStatus, error: Error }
+  status: ApiStatus
+  error: Error
 }
 
-type ApiState = Pick<RemindersState, 'add'|'edit'|'fetch'|'delete'>
 
 export interface InputError {
   errorMessage: string
@@ -44,26 +41,10 @@ function isRejectedAction(action: Action): action is RejectedAction {
 
 const initialState: RemindersState = {
   reminders: [],
-  add: { status: 'idle', error: null },
-  edit: { status: 'idle', error: null },
-  fetch: { status: 'idle', error: null },
-  delete: { status: 'idle', error: null },
+  status: 'idle',
+  error: null
 }
 
-/**
- * this is a function that calls a function
- * since operation is a keyof our RemindersState interface, it is equivalent to the string
- * "reminders", "add", "edit", "fetch", or "delete"
- * so if we know operation isn't reminders, we can safely access RemindersState add, edit, etc property
- * and change its' status to be whatever we pass in (succeeded, pending, failed, etc)
- * This is called as setStatus("add", "succeeded")(state) where state is a RemindersState
- */
-const setStatus = (operation: keyof RemindersState, status: ApiStatus) =>
-  (state: RemindersState) => {
-    if (operation !== "reminders"){
-      state[operation].status = status
-    }
-  }
 
 export const remindersSlice = createSlice({
   name: "reminders",
@@ -84,57 +65,23 @@ export const remindersSlice = createSlice({
   extraReducers(builder) {
     builder
     .addCase(fetchReminders.fulfilled, (state, action) => {
-      setStatus("fetch", "succeeded")(state)
-      //state.status = 'succeeded'
+      state.status = 'succeeded'
       state.reminders.push(...action.payload);
     })
-    .addCase(fetchReminders.pending, (state, action) => {
-      console.log(action)
-      setStatus("fetch", "pending")(state)
-    })
-    .addCase(fetchReminders.rejected, (state, action) => {
-      setStatus("fetch", "failed")(state)
-      if (action.payload !== undefined) {
-        state.fetch.error = action.payload.errorMessage ?? 'Unknown error'
-      }
-    })
     .addCase(addReminder.fulfilled, (state, action) => {
-      setStatus("add", "succeeded")(state)
-      // state.status = 'succeeded'
+      state.status = 'succeeded'
       state.reminders.push(action.payload);
     })
-    .addCase(addReminder.pending, (state, action) => {
-      console.log(action)
-      setStatus("add", "pending")(state)
-    })
-    .addCase(addReminder.rejected, (state, action) => {
-      setStatus("add", "failed")(state)
-      if (action.payload !== undefined) {
-        state.add.error = action.payload.errorMessage ?? 'Unknown error'
-      }
-    })
     .addCase(deleteReminder.fulfilled, (state, action) => {
-      setStatus("delete", "succeeded")(state)
-      // state.status = 'succeeded'
+      state.status = 'succeeded'
       console.log(action.payload)
       // this creates a new array, does not directly edit original state
       state.reminders = state.reminders.filter((reminder) => {
         return reminder._id !== action.payload
       })
     })
-    .addCase(deleteReminder.pending, (state, action) => {
-      console.log(action)
-      setStatus("delete", "pending")(state)
-    })
-    .addCase(deleteReminder.rejected, (state, action) => {
-      setStatus("delete", "failed")(state)
-      if (action.payload !== undefined) {
-        state.delete.error = action.payload.errorMessage ?? 'Unknown error'
-      }
-    })
     .addCase(editReminder.fulfilled, (state, action) => {
-      setStatus("edit", "succeeded")(state)
-      // state.status = 'succeeded';
+      state.status = 'succeeded';
       // this creates a new array, does not edit original state
       // additionally, we are not adding a new reminder object in the new array, just modifying one field of the original
       // while keeping all other fields the same
@@ -142,32 +89,21 @@ export const remindersSlice = createSlice({
         return reminder._id === action.payload._id ?  {...reminder, value: action.payload.value} : reminder
       })
     })
-    .addCase(editReminder.pending, (state, action) => {
-      console.log(action)
-      setStatus("edit", "pending")(state)
-    })
-    .addCase(editReminder.rejected, (state, action) => {
-      setStatus("edit", "failed")(state)
-      if (action.payload !== undefined) {
-        state.edit.error = action.payload.errorMessage ?? 'Unknown error'
-      }
-    })
 
     // since every pending and rejected case is the same, we can add matchers that will 
     // provide a baseline for every case rather than repeating
     // UPDATE: now everything is different and as of right now we cannot have all the oending and rejected actions
     // be the same
+    // UPDATE 2: I am now able to revert it to its original simple state since Middleware can handle the toasts which is the only reason
+    // I thought I needed to make the state more complex
     .addMatcher(isPendingAction, (state, action) => {
-      // should be able to access action.meta.requestStatus and set as 'pending'
-      // nut for some some stupid reason I am unable to do so
-      console.log(action)
-      // state.status = 'pending'
+      state.status = 'pending'
     })
     .addMatcher(isRejectedAction, (state, action) => {
-      // state.status = 'failed'
+      state.status = 'failed'
       // because we established that rejectWithValue takes in an InputError
       // the payload here knows that there should be an errorMessage field we can access
-      // state.error = action.payload.errorMessage ?? 'Unknown error'
+      state.error = action.payload.errorMessage ?? 'Unknown error'
     })
   },
 })
@@ -180,18 +116,8 @@ export const selectReminders = (state: RootState) => state.reminders.reminders
 // instead of returning just reminders.status, we should see if there is a way to 
 // go through each key in RemindersState (that isn't reminders). If any is pending or failed or succeeded then
 // make the status pending or failed or succeeded. Otherwise, status is idle
-// export const remindersStatus = (state: RootState) => state.reminders.status
-// export const errorMessage = (state: RootState) => state.reminders.error
-export const newRemindersStatus = (state: RootState): ApiStatus => {
-  if (state.reminders.add.status === 'failed' || state.reminders.delete.status === 'failed' || state.reminders.edit.status === 'failed' || state.reminders.fetch.status === 'failed') {
-    return 'failed'
-  } else if (state.reminders.add.status === 'pending' || state.reminders.delete.status === 'pending' || state.reminders.edit.status === 'pending' || state.reminders.fetch.status === 'pending') {
-    return 'pending'
-  } else if (state.reminders.add.status === 'succeeded' || state.reminders.delete.status === 'succeeded' || state.reminders.edit.status === 'succeeded' || state.reminders.fetch.status === 'succeeded') {
-    return 'succeeded'
-  }
-  return 'idle'
-}
+export const remindersStatus = (state: RootState) => state.reminders.status
+export const errorMessage = (state: RootState) => state.reminders.error
 
 // this is now listening for any addReminder.fullfilled action dispatches and shows a toast if one happens
 export const addReminderListeners = (startAppListening: AppStartListening) => {
@@ -209,18 +135,21 @@ export const addReminderListeners = (startAppListening: AppStartListening) => {
     }
   })
 }
- 
-export const newErrorMessage = (state: RootState): Error => {
-  if (state.reminders.add.error !== null) {
-    return state.reminders.add.error
-  } else if (state.reminders.fetch.error !== null) {
-    return state.reminders.fetch.error
-  } else if (state.reminders.edit.error !== null) {
-    return state.reminders.edit.error
-  } else if (state.reminders.delete.error !== null) {
-    return state.reminders.delete.error
-  }
-  return null
+// this is now listening for any deleteReminder.fullfilled action dispatches and shows a toast if one happens
+export const deleteReminderListeners = (startAppListening: AppStartListening) => {
+  startAppListening({
+    actionCreator: deleteReminder.fulfilled,
+    effect: async (action, listenerApi) => {
+      const { toast } = await import('react-tiny-toast')
+      const toastId = toast.show("Reminder Deleted", {
+        variant: 'success',
+        position: 'top-right',
+        pause: true
+      })
+      await listenerApi.delay(5000)
+      toast.remove(toastId)
+    }
+  })
 }
 
 // mostly just to show Thunks in action, not really useful for our case
@@ -268,7 +197,7 @@ export const fetchReminders = createAppAsyncThunk<
   // RTK Query implements something similar automatically so we don't need to worry about manually writing this
   {
     condition(arg, thunkApi) {
-      const status = newRemindersStatus(thunkApi.getState());
+      const status = remindersStatus(thunkApi.getState());
       if (status !== 'idle') {
         return false
       }

@@ -8,6 +8,7 @@ export const getReminders = async (req: Request, res: Response): Promise<void> =
     const reminders = await Reminders.find();
     console.log("Reminders retrieved:", reminders);
     logging.log("AHHHHH", reminders)
+
     res.status(200).json(reminders);
   } catch (error) {
     console.error("Failed to fetch reminders:", error);
