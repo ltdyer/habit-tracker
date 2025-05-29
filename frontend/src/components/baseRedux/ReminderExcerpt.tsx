@@ -1,7 +1,7 @@
-import { Reminder } from "../interfaces/RemindersInterfaces"
-import { useAppDispatch } from '../hooks/useAppDispatch';
+import { Reminder } from "../../interfaces/RemindersInterfaces"
+import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useState, KeyboardEvent, MouseEvent, useEffect } from "react";
-import {deleteReminder, editReminder } from "../app/remindersSlice";
+import {deleteReminder, editReminder } from "../../app/remindersSlice";
 import { ListItemButton, ListItem, ListItemIcon, ListItemText, TextField, ClickAwayListener } from "@mui/material";
 import { CircleOutlined, DehazeRounded } from "@mui/icons-material";
 import { Draggable, DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";

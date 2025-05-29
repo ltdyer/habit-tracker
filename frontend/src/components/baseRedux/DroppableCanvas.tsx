@@ -1,9 +1,9 @@
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Stack } from '@mui/material';
 import { ReminderExcerpt } from './ReminderExcerpt';
-import { useAppSelector } from '../hooks/useAppSelector';
-import { selectReminders, rearrangeReminders } from '../app/remindersSlice';
-import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { selectReminders, rearrangeReminders } from '../../app/remindersSlice';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
 
 export const DroppableCanvas = () => {
 

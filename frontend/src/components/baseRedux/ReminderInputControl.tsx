@@ -1,10 +1,10 @@
 import { useState, KeyboardEvent } from "react";
-import { Reminder } from "../interfaces/RemindersInterfaces";
-import { useAppDispatch } from '../hooks/useAppDispatch';
-import { useAppSelector } from '../hooks/useAppSelector';
-import { selectReminders, addReminder } from '../app/remindersSlice';
+import { Reminder } from "../../interfaces/RemindersInterfaces";
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { selectReminders, addReminder } from '../../app/remindersSlice';
 import { TextField } from '@mui/material'
-import "../styling/ReminderDisplay.css"
+import "../../styling/ReminderDisplay.css"
 
 
 export const ReminderInputControl = () => {

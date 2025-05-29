@@ -1,7 +1,7 @@
 import {  useEffect, ReactNode } from 'react'
-import { useAppDispatch } from '../hooks/useAppDispatch';
-import { useAppSelector } from '../hooks/useAppSelector';
-import { errorMessage, fetchReminders, remindersStatus } from '../app/remindersSlice';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { errorMessage, fetchReminders, remindersStatus } from '../../app/remindersSlice';
 import CircularProgress from '@mui/material/CircularProgress'
 import { Box, Stack, Alert } from '@mui/material'
 import { ReminderInputControl } from './ReminderInputControl';

@@ -14,10 +14,9 @@ export const store = configureStore({
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
-      // this middleware is just from the tutorial. Not really using it
-      // but essentially it can be used to listen for post requests
+      // this middleware is just from the tutorial. It can be used to listen for post requests
       // and show a toast when a reminder gets added vs deleted
-      // which would have drastically simplified the new changes we made to remindersSlice
+      // which drastically simplified the new changes we made to remindersSlice
       .prepend(listenerMiddleware.middleware)
       .concat(remindersSliceRTKQ.middleware)
 })

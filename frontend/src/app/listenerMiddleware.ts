@@ -1,6 +1,6 @@
 import { createListenerMiddleware, addListener } from '@reduxjs/toolkit'
 import type { RootState, AppDispatch } from './store'
-import { addReminderListeners, deleteReminderListeners } from './remindersSlice'
+import { addReminderListeners, deleteReminderListeners, addReminderListenersRTKQ, deleteReminderListenersRTKQ } from './remindersSlice'
 
 // this is literally all boilerplate from the redux docs
 
@@ -17,3 +17,5 @@ export type AppAddListener = typeof addAppListener
 
 addReminderListeners(startAppListening);
 deleteReminderListeners(startAppListening);
+addReminderListenersRTKQ(startAppListening);
+deleteReminderListenersRTKQ(startAppListening);

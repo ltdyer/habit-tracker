@@ -1,4 +1,5 @@
 .input-container {
   display: flex;
   justify-content: space-around;
+  row-gap: 2px;
 }

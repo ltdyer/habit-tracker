@@ -5,6 +5,7 @@ import { client } from "../api/remindersAPI";
 import { Reminder, ApiStatus, Error } from "../interfaces/RemindersInterfaces";
 import { createAppAsyncThunk } from "./withTypes";
 import { AppStartListening } from "./listenerMiddleware";
+import { remindersSliceRTKQ } from "./remindersSliceRTKQ";
 
 export interface RemindersState {
   reminders: Reminder[]
@@ -20,7 +21,7 @@ export interface InputError {
 // use this Pick utility to take an existing Interface and create a new type from it with only select fields
 // here I want to send a Reminder as body input to addReminder but since MongoDB takes care of ID generation
 // I don't want to send it with an ID. SO I make a new Reminder type that is a Reminder but without that _id
-type NewReminder = Pick<Reminder, 'value'>;
+export type NewReminder = Pick<Reminder, 'value'>;
 
 
 // Action definitions to tell Redux how it should define a Pending or Rejected action.
@@ -113,9 +114,6 @@ export const {removeReminder, rearrangeReminders} = remindersSlice.actions;
 export default remindersSlice.reducer
 
 export const selectReminders = (state: RootState) => state.reminders.reminders
-// instead of returning just reminders.status, we should see if there is a way to 
-// go through each key in RemindersState (that isn't reminders). If any is pending or failed or succeeded then
-// make the status pending or failed or succeeded. Otherwise, status is idle
 export const remindersStatus = (state: RootState) => state.reminders.status
 export const errorMessage = (state: RootState) => state.reminders.error
 
@@ -139,6 +137,38 @@ export const addReminderListeners = (startAppListening: AppStartListening) => {
 export const deleteReminderListeners = (startAppListening: AppStartListening) => {
   startAppListening({
     actionCreator: deleteReminder.fulfilled,
+    effect: async (action, listenerApi) => {
+      const { toast } = await import('react-tiny-toast')
+      const toastId = toast.show("Reminder Deleted", {
+        variant: 'success',
+        position: 'top-right',
+        pause: true
+      })
+      await listenerApi.delay(5000)
+      toast.remove(toastId)
+    }
+  })
+}
+// this is now listening for any addReminder action dispatches in RTK QUERY and shows a toast if one happens
+export const addReminderListenersRTKQ = (startAppListening: AppStartListening) => {
+  startAppListening({
+    matcher: remindersSliceRTKQ.endpoints.addReminder.matchFulfilled,
+    effect: async (action, listenerApi) => {
+      const { toast } = await import('react-tiny-toast')
+      const toastId = toast.show("New Reminder Added", {
+        variant: 'success',
+        position: 'top-right',
+        pause: true
+      })
+      await listenerApi.delay(5000)
+      toast.remove(toastId)
+    }
+  })
+}
+// this is now listening for any deleteReminder action dispatches in RTK QUERY and shows a toast if one happens
+export const deleteReminderListenersRTKQ = (startAppListening: AppStartListening) => {
+  startAppListening({
+    matcher: remindersSliceRTKQ.endpoints.deleteReminder.matchFulfilled,
     effect: async (action, listenerApi) => {
       const { toast } = await import('react-tiny-toast')
       const toastId = toast.show("Reminder Deleted", {
